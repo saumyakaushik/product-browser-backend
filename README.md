@@ -1,27 +1,16 @@
 # Product Browser Backend
 
-A simple Node.js backend for browsing products with MySQL.
+A Node.js and MySQL app for browsing 200,000 products with fast cursor pagination.
 
-## Files
+## Features
 
-- `src/db.js` — database connection helper
-- `src/server.js` — Express API server
-- `scripts/seed.js` — database seed script
-- `public/index.html` — static frontend page
-- `.env` — local environment variables
+- Browse products newest first
+- Filter by category
+- Paginate with cursor pagination
+- Seed script generates 200,000 products
+- Simple browser UI
 
 ## Setup
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Update `.env` with your MySQL settings.
-3. Seed the database:
-   ```bash
-   npm run seed
-   ```
-4. Start the server:
-   ```bash
-   npm run dev
-   ```
+```bash
+npm install
