@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Browser</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 32px;
+      background: #f6f7f9;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    select,
+    button {
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #eeeeee;
+    }
+
+    .footer {
+      margin-top: 20px;
+    }
+
+    .message {
+      margin: 16px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Product Browser</h1>
+
+  <div class="controls">
+    <label for="category">Category:</label>
+
+    <select id="category">
+      <option value="">All</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Books">Books</option>
+      <option value="Home">Home</option>
+      <option value="Sports">Sports</option>
+    </select>
+  </div>
+
+  <div id="message" class="message">Loading products...</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Created At</th>
+        <th>Updated At</th>
+      </tr>
+    </thead>
+    <tbody id="products"></tbody>
+  </table>
+
+  <div class="footer">
+    <button id="nextButton">Next Page</button>
+  </div>
+
+  <script>
+    const productsBody = document.getElementById("products");
+    const message = document.getElementById("message");
+    const categorySelect = document.getElementById("category");
+    const nextButton = document.getElementById("nextButton");
+
+    let nextCursor = null;
+    let selectedCategory = "";
+
+    function formatDate(value) {
+      return new Date(value).toLocaleString();
+    }
+
+    function renderProducts(products) {
+      productsBody.innerHTML = "";
+
+      products.forEach((product) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${product.id}</td>
+          <td>${product.name}</td>
+          <td>${product.category}</td>
+          <td>$${product.price}</td>
+          <td>${formatDate(product.created_at)}</td>
+          <td>${formatDate(product.updated_at)}</td>
+        `;
+
+        productsBody.appendChild(row);
+      });
+    }
+
+    async function loadProducts(cursor = null) {
+      message.textContent = "Loading products...";
+      nextButton.disabled = true;
+
+      const params = new URLSearchParams();
+      params.set("limit", "50");
+
+      if (selectedCategory) {
+        params.set("category", selectedCategory);
+      }
+
+      if (cursor) {
+        params.set("cursor", cursor);
+      }
+
+      const response = await fetch(`/products?${params.toString()}`);
+      const data = await response.json();
+
+      renderProducts(data.products);
+
+      nextCursor = data.nextCursor;
+      nextButton.disabled = !data.hasNextPage;
+
+      message.textContent = data.products.length
+        ? `Showing ${data.products.length} products`
+        : "No products found.";
+    }
+
+    categorySelect.addEventListener("change", () => {
+      selectedCategory = categorySelect.value;
+      nextCursor = null;
+      loadProducts();
+    });
+
+    nextButton.addEventListener("click", () => {
+      if (nextCursor) {
+        loadProducts(nextCursor);
+      }
+    });
+
+    loadProducts();
+  </script>
+</body>
+</html>
